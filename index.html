@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+    <head>
+	<meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Lalala timezone</title>
+    </head>
+    <body>
+	<p>Raw Time: <span id="raw">Lalalalala....</span></p>
+	<p>Converted Time: <span id="time">Some Intermission....</span></p>
+	<script src="bower_components/jquery/dist/jquery.js"></script>
+	<script src="bower_components/moment/moment.js"></script>
+	<script>
+	    ( function () {
+		moment.fn.localEquivalent = function localEquivalent ( offset ) {
+		    var serverDate = addServerTimezone( this, offset );
+		    return moment( serverDate );
+		};
+
+		moment.fn.timeDiffSince = function timeDiffSince ( date, unit ) {
+		    var now = this.tz( serverTimezoneIdent );
+		    return now.diff( moment( new Date( date ) ), unit );
+		};
+
+		function parse ( raw ) {
+		    var date = JSON.parse( raw )
+		    var returnDate = moment( date.ServerDateTime )
+			.localEquivalent( date.HoursOffset );
+			$( '#raw' ).text( date.ServerDateTime );
+			$( '#time' ).text( returnDate );
+		}
+
+		function addServerTimezone ( moment, offset ) {
+		    return moment.zone( offset, true ).format();
+		}
+
+		var currentDateTime = moment().format( 'YYYY-MM-DD hh:mm:ss' );
+		var timezoneOffset =  moment().zone() / 60;
+
+		var url = 'shinji/TimezoneService.cfc?method=getServerTime';
+		var params = '&dateInput=' + currentDateTime + '&timezoneInput=' +timezoneOffset;
+		var time = url + params;
+
+		$.get( time ).then( parse );
+	    } )();
+	</script>
+    </body>
+</html>
